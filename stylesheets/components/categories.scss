@@ -1,0 +1,30 @@
+// Hide subcategories in the hamburger menu
+.category-links .category-link.subcategory { display: none; }
+
+// We're not using the category banner the way it was intended. Instead, we use
+// it for flavor: a sticky category-colored border to the header.
+.category-title-header {
+    height: 4px;
+    overflow: hidden;
+}
+.below-site-header-outlet.category-header-widget {
+    position: sticky;
+    top: 61px;
+    @include breakpoint(mobile-extra-large) { top: 56px; }
+    z-index: 999;
+}
+
+.category-boxes, .category-boxes-with-topics {
+    .category-box-inner {
+        // h3 { margin-left: -0.4em; }
+        background-color: var(--category-box-bg);
+    }
+    .description {
+        margin-top: 10px;
+        color: var(--primary-high);
+    }
+}
+
+.subcategories {
+    padding-top: 4px;
+}

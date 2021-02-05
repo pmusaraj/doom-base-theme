@@ -1,0 +1,46 @@
+/* light.scss
+ *
+ * Styles meant specifically for light themes.
+ */
+
+header.d-header, .myfooter {
+    background-color: var(--secondary);
+}
+.myfooter {
+    border-top: 4px solid var(--quaternary);
+}
+
+// More pronounced topic links
+.link-top-line a.title.raw-topic-link {
+    color: lighten($primary, 15%);
+}
+
+
+$-box-bg: mix($highlight, $secondary, 8%);
+$-box-border: mix($highlight, $secondary, 25%);
+
+#banner { background-color: $-box-bg; }
+
+.category-boxes, .category-boxes-with-topics {
+    .category-box-inner {
+        background-color: $-box-bg;
+    }
+    .category-box-inner, .category-box.no-category-boxes-style {
+        border-color: $-box-border !important;
+    }
+}
+
+body.custom-sidebar {
+    .category-sidebar .sticky-sidebar .cooked {
+        > blockquote {
+            background-color: mix($highlight, $secondary, 12%);
+        }
+        &:before {
+            border-bottom: 3px solid $-box-border;
+        }
+    }
+}
+
+.topic-list {
+    tbody, tr { border-color: $-box-border; }
+}

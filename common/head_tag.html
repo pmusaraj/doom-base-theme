@@ -1,0 +1,356 @@
+<script type="text/discourse-plugin" version="0.1">
+    var theme = {
+        2:  [ "doom-one-light", false ],
+        3:  [ "doom-one", true ],
+        27: [ "doom-dracula", true ],
+        29: [ "doom-city-lights", true ]
+    }[require('discourse/lib/theme-selector').currentThemeId()];
+    if (theme) {
+        let classes = document.querySelector("html").classList;
+        classes.add(`theme-${theme[0]}`);
+        classes.add(theme[1] ? "dark" : "light");
+    }
+
+    require('discourse/components/topic-list').default.reopen({
+        showLikes: true
+    });
+
+    api.decorateCooked(function($elem) {
+        // Convert blockquotes with leading emoji into "tips"
+        $elem.find(`blockquote:has(p:first-child :first-child.emoji)`).each(function() {
+            let node = $(this);
+            let type = node.find(".emoji:first-child").attr("title");
+            node.addClass("tip");
+            node.addClass(`tip-${type.substring(1, type.length-1)}`);
+        });
+
+        // Create tabbed panels out of [wrap=tabbed]...[/wrap] codes
+        let tabbed = $elem.find(`[data-wrap="tabbed"]`).addClass("tabbed");
+        let detachedTabs = $elem.find(`[data-wrap="tab"]`).addClass("tab");
+        detachedTabs.find(`:first-child`).addClass("selected");
+        tabbed.each(function() {
+            let tabLine = $(`<ul class="tab-line"></ul>`);
+            let node = $(this);
+            let id = node.attr("data-id");
+            let tabs = node.find(`[data-wrap]`);
+            tabs.each(function() {
+                let node = $(this);
+                let name = node.attr("data-wrap");
+                let title = node.attr("data-title") || name;
+                let link = $(`<a data-target="${name}">${title}</a>`);
+                link.click(function () {
+                    tabLine.find('a.selected').removeClass('selected');
+                    link.addClass('selected')
+                    if (id) {
+                       detachedTabs.filter(`[data-id="${id}"]`).each(function() {
+                            let node = $(this);
+                            node.find(`[data-wrap]`).removeClass('selected');
+                            node.find(`[data-wrap="${name}"]`).addClass('selected');
+                        });
+                    } else {
+                        tabs.removeClass('selected');
+                        node.addClass('selected');
+                    }
+                });
+                tabLine.append($('<li></li>').append(link));
+            });
+            tabLine.find('a').first().addClass('selected');
+            tabs.first().addClass('selected');
+            node.prepend(tabLine);
+        });
+    }, { id: "discourse-tips" });
+
+    // Convert backticks to <code>...</code> in topic titles
+    api.decorateTopicTitle(function(_topicModel, node, _topicTitleType) {
+        let str = node.innerHTML;
+        let j = 0;
+        while (str !== (str = str.replace(/`/, j++ % 2 == 1 ? "</code>" : "<code>"))) {};
+        if (j % 2 == 1) { node.innerHTML = str; }
+    });
+</script>
+
+<script type="text/x-handlebars" data-template-name="list/posters-column.raw">
+    <td class='posters theme-avatar-{{themeSettings.latest_avatar_size}}'>
+        {{#each posters as |poster|}}
+        <a href="{{poster.user.path}}"  data-user-card="{{poster.user.username}}" class="{{poster.extraClasses}}">
+            {{avatar poster avatarTemplatePath="user.avatar_template" usernamePath="user.username" namePath="user.name" imageSize="large"}}
+        </a>
+        {{/each}}
+    </td>
+</script>
+
+<script type="text/x-handlebars" data-template-name="topic-list-header.raw">
+    {{#if bulkSelectEnabled}}
+      <th class="bulk-select">
+          {{#if canBulkSelect}}
+          {{raw "flat-button" class="bulk-select" icon="list" title="topics.bulk.toggle"}}
+          {{/if}}
+      </th>
+    {{/if}}
+    {{raw "topic-list-header-column" order='default' name=listTitle bulkSelectEnabled=bulkSelectEnabled showBulkToggle=toggleInTitle canBulkSelect=canBulkSelect}}
+    {{#if showPosters}}
+      {{raw "topic-list-header-column" order='posters' ariaLabel=(i18n "category.sort_options.posters")}}
+    {{/if}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="list/topic-list-item.raw">
+    {{~raw-plugin-outlet name="topic-list-before-columns"}}
+
+    {{#if bulkSelectEnabled}}
+      <td class="bulk-select">
+          <input type="checkbox" class="bulk-select">
+      </td>
+    {{/if}}
+
+    <td class='main-link clearfix' colspan="1">
+      {{~raw-plugin-outlet name="topic-list-before-link"}}
+      <span class='link-top-line'>
+        {{~raw-plugin-outlet name="topic-list-before-status"}}
+        {{~raw "topic-status" topic=topic}}
+        {{~topic-link topic class="raw-link raw-topic-link"}}
+        {{~#if topic.featured_link}}
+            {{~topic-featured-link topic}}
+        {{~/if}}
+        {{~raw-plugin-outlet name="topic-list-after-title"}}
+        {{~raw "list/unread-indicator" includeUnreadIndicator=includeUnreadIndicator
+                                       topicId=topic.id
+                                       unreadClass=unreadClass~}}
+        {{~#if showTopicPostBadges}}
+            {{~raw "topic-post-badges" unread=topic.unread newPosts=topic.displayNewPosts unseen=topic.unseen url=topic.lastUnreadUrl newDotText=newDotText}}
+        {{~/if}}
+      </span>
+
+      <div class="link-bottom-line">
+          {{#unless hideCategory}}
+              {{#unless topic.isPinnedUncategorized}}
+                  {{category-link topic.category}}
+              {{/unless}}
+          {{/unless}}
+
+          {{discourse-tags topic mode="list" tagsForUser=tagsForUser}}
+      </div>
+
+      {{#if expandPinned}}
+          {{raw "list/topic-excerpt" topic=topic}}
+      {{/if}}
+
+      <div class="link-meta-data">
+          <div class="num {{class}} {{cold-age-class topic.createdAt startDate=topic.bumpedAt class=""}} activity" title="{{html-safe topic.bumpedAtTitle}}">
+              <a class="post-activity" href="{{topic.lastPostUrl}}">
+                  {{d-icon "far-clock"}}
+                  {{~raw-plugin-outlet name="topic-list-before-relative-date"~}}
+                  {{~format-date topic.bumpedAt format="tiny" noTitle="true"~}}
+              </a>
+          </div>
+
+          <div class="num views {{topic.viewsHeat}}">
+              <a href="{{topic.lastPostUrl}}" class='posts-map badge-posts {{view.likesHeat}}'>
+                  {{d-icon "far-eye"}}
+                  {{number topic.views numberKey="views_long"}}
+              </a>
+          </div>
+
+          {{#if topic.replyCount}}
+          <div class="num posts-map posts {{view.likesHeat}}' title='{{view.title}}">
+              <a href="{{topic.lastPostUrl}}" class=|posts-map badge-posts {{view.likesHeat}}">
+                  {{d-icon "far-comment"}}
+                  {{raw-plugin-outlet name="topic-list-before-reply-count"}}
+                  {{number topic.replyCount noTitle="true" ariaLabel=view.title}}
+              </a>
+          </div>
+          {{/if}}
+
+          {{#if showLikes}}
+          {{#if hasLikes}}
+          <div class="num likes">
+              <a href='{{topic.summaryUrl}}'>
+                  {{d-icon "far-heart"}} {{number topic.like_count}}
+              </a>
+          </div>
+          {{/if}}
+          {{else if showOpLikes}}
+          {{#if hasOpLikes}}
+          <div class="num likes">
+              <a href='{{topic.summaryUrl}}'>
+                  {{d-icon "far-heart"}} {{number topic.op_like_count}}
+              </a>
+          </div>
+          {{/if}}
+          {{/if}}
+
+          {{raw "list/action-list" topic=topic postNumbers=topic.liked_post_numbers className="likes" icon="heart"}}
+      </div>
+    </td>
+
+    {{#if showPosters}}
+        {{raw "list/posters-column" posters=topic.featuredUsers}}
+    {{/if}}
+</script>
+
+<!-- Social links in user cards -->
+<script type="text/discourse-plugin" version="0.8.7">
+ var fieldOptions = {}
+ fieldOptions.iconicUserFields = [
+     {
+         name: 'Github',
+         icon: 'fab-github',
+         link: {
+             type: 'userField',
+             value: "Github",
+             base: 'https://github.com/',
+             baseregex: '^http(s)?://(www.)?github.com/'
+         }
+     },
+     {
+         name: 'Instagram',
+         icon: 'fab-instagram',
+         link: {
+             type: 'userField',
+             value: 'Instagram',
+             base: 'https://instagram.com/',
+             baseregex: '^http(s)?://(www.)?instagram.com/'
+         }
+     },
+     {
+         name: 'Twitter',
+         icon: 'fab-twitter',
+         link: {
+             type: 'userField',
+             value: 'Twitter',
+             base: 'https://twitter.com/',
+             baseregex: '^http(s)?://(www.)?twitter.com/'
+         }
+     },
+     {
+         name: 'LinkedIn',
+         icon: 'fab-linkedin-in',
+         link: {
+             type: 'userField',
+             value: 'LinkedIn Profile',
+             base: 'https://linkedin.com/',
+             baseregex: '^http(s)?://(www.)?linkedin.com/'
+         }
+     },
+     {
+         name: 'YouTube',
+         icon: 'fab-youtube',
+         link: {
+             type: 'userField',
+             value: 'Youtube',
+             base: 'https://youtube.com/',
+             baseregex: '^http(s)?://(www.)?youtube.com/'
+         }
+     },
+ ]
+ fieldOptions.userIconicUserFields = fieldOptions.iconicUserFields
+
+ function parseFieldOptions (component, name) {
+     var model_name = (name.substring(0, 4) === 'user') ? 'model' : 'user'
+     var options = fieldOptions[name]
+     const siteUserFields = component.site.get('user_fields')
+     const userFields = component.get(model_name  + '.user_fields')
+     component.set(name, options.map(field => {
+         var base = field.link.base || ''
+         var baseregex = field.link.baseregex || ''
+         if (field.link.type === 'userField') {
+             var siteUserField = siteUserFields.filterBy('name', field.link.value)[0]
+             if (siteUserField && userFields[siteUserField.get('id')]) {
+                 var socialLinkValue = userFields[siteUserField.get('id')];
+                 socialLinkValue = RegExp(baseregex).test(socialLinkValue) ? socialLinkValue : base + socialLinkValue;
+                 Ember.set(field, 'href', socialLinkValue || '')
+             } else {
+                 return null
+             }
+         }
+
+         return field.href ? field : null
+     }).compact())
+ }
+
+ api.registerConnectorClass('user-post-names', 'user-card-profile-customization', {
+     setupComponent(args, component) {
+         parseFieldOptions(component, 'userIconicUserFields')
+     }
+ })
+
+ api.registerConnectorClass('user-card-post-names', 'user-card-profile-customization', {
+     setupComponent(args, component) {
+         parseFieldOptions(component, 'iconicUserFields')
+     }
+ })
+
+ api.modifyClass('component:user-card-contents', {
+     hasLocationOrWebsite: true
+ })
+</script>
+
+<script type='text/x-handlebars' data-template-name='/connectors/user-post-names/user-card-profile-customization'>
+    {{#if userIconicUserFields}}
+    <div class="iconic-user-fields">
+        {{#each userIconicUserFields as |ic|}}
+        {{#if ic.icon}}
+            <a href="{{ic.href}}" rel="nofollow" target="_blank" title="{{ic.name}}">
+                {{d-icon ic.icon}}
+            </a>
+        {{/if}}
+        {{/each}}
+    </div>
+    {{/if}}
+</script>
+
+<script type='text/x-handlebars' data-template-name='/connectors/user-card-post-names/user-card-profile-customization'>
+    {{#if iconicUserFields}}
+    <div class="iconic-user-fields">
+        {{#each iconicUserFields as |ic|}}
+          {{#if ic.icon}}
+              <a href="{{ic.href}}" rel="nofollow" target="_blank" title="{{ic.name}}">
+                  {{d-icon ic.icon}}
+              </a>
+          {{/if}}
+        {{/each}}
+    </div>
+    {{/if}}
+</script>
+
+<script type="text/discourse-plugin" version="0.8">
+const { iconNode } = require("discourse-common/lib/icon-library");
+
+api.decorateWidget("header-buttons:after", helper => {
+  if (!Discourse.User.current()) return;
+
+  let container = api.container,
+      ntb_text = "Create New Topic",
+      ntb_title = ntb_text,
+      ntb_icon = "plus",
+      ntb_button_class = "icon btn-flat",
+      ntb_button_helper = "a#new-create-topic",
+      ntb_label_helper = "span.d-button-label",
+      composerModal = require("discourse/models/composer").default,
+      composerController = container.lookup("controller:composer");
+
+  const createTopic = function() {
+    const controller = container.lookup("controller:navigation/category"),
+      category = controller.get("category.id"),
+      topicCategory = container
+        .lookup("route:topic")
+        .get("context.category.id"),
+      categoryd = topicCategory ? topicCategory : category;
+
+    composerController.open({
+      action: composerModal.CREATE_TOPIC,
+      categoryId: categoryd,
+      draftKey: composerModal.DRAFT
+    });
+  };
+
+  return helper.h(
+    ntb_button_helper,
+    {
+      className: ntb_button_class,
+      title: ntb_title,
+      onclick: createTopic
+    },
+    [iconNode(ntb_icon)]
+  );
+});
+</script>

@@ -1,0 +1,6 @@
+// We use tags for this
+.select-kit-collection .tag-drop {
+    &[data-value=solved], &[data-value=unsolved] { display: none; }
+}
+.solved-status-filter { display: none; }
+.topic-statuses span[title="This topic has a solution"] { display: none; }

@@ -1,0 +1,51 @@
+// blockquotes.scss
+
+blockquote {
+    border: 1px solid var(--quote-border);
+
+    // The background change can make some elements with their own background
+    // look weird, so minor tweaks are needed.
+    code:not(.hljs) { background-color: var(--code-inline-bg) !important; }
+    aside.onebox { border-color: var(--secondary); }
+
+    &.tip, aside.quote &.tip {
+        background-color: var(--tip-bg) !important;
+        border: none;
+        border-left: 60px solid var(--tip-emoji-bg) !important;
+        display: block;
+        position: relative;
+        .emoji:first-child {
+            position: absolute;
+            top: calc(49.5% - 15px);
+            left: -45px;
+            width: 30px;
+            height: 30px;
+        }
+    }
+    aside.quote &.tip {
+        background-color: var(--tip-bg-1) !important;
+        border-left-color: var(--tip-emoji-bg-1) !important;
+    }
+
+    blockquote, aside.quote blockquote, aside.quote .title {
+        background-color: var(--secondary) !important;
+        border-color: var(--secondary);
+    }
+    aside.quote {
+        blockquote, .title {
+            border-left-color: var(--quote-border-2) !important;
+        }
+    }
+}
+
+aside.quote {
+    border: none;
+    .title { margin-bottom: -5px; }
+    .title, blockquote {
+        background-color: var(--quote-border) !important;
+        border-left: 4px solid var(--quote-border-2) !important;
+    }
+
+    // No unnatural padding between the blockquote and its first element
+    blockquote :first-child { margin-top: 0; }
+}

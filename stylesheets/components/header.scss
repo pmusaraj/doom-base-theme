@@ -1,0 +1,40 @@
+.custom-header-links .headerLink a {
+    color: var(--love);
+}
+
+header.d-header {
+    border-bottom: 4px solid var(--highlight);
+    span.header-buttons {
+        margin: 0;
+        margin-right: -5px;
+        #new-create-topic {
+            align-items: center;
+            display: flex;
+            height: 2.2857em;
+            justify-content: center;
+            padding: 0.2143em;
+            position: relative;
+            width: 2.2857em;
+            transition: background-color linear 0.15s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            svg {
+                color: var(--header_primary-low-mid);
+                font-size: $font-up-5;
+            }
+            &:hover {
+                background-color: var(--primary-low);
+            }
+        }
+    }
+}
+
+// Larger search results popup
+.search-menu .menu-panel {
+    width: 580px !important;
+}
+
+.header-search-enabled.align-right .contents .search-header {
+    width: 500px;
+    margin-right: 150px !important;
+}

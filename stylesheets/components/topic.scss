@@ -1,0 +1,73 @@
+// Remove excessive padding between top of post and author data
+.topic-body .topic-meta-data { padding-top: 0; }
+
+// Username highlight
+span.username {
+    a { font-weight: bolder; }
+    &.staff a { color: var(--love); }
+    &.moderator a { color: var(--success); }
+}
+
+// Add a top border to posts with table-of-contents (is hidden otherwise).
+.d-toc-post .topic-body, .d-toc-post .topic-avatar {
+    border-top: 1px solid var(--primary-low);
+}
+
+// Hide the number of edits by default (reveal it on hover though); we have a lot of wikis,
+// these'll get into the thousands before long.
+// .post-info.edits {
+//     direction: rtl;
+//     white-space: nowrap;
+//     width: 28px;
+//     overflow-x: hidden;
+//     margin-right: 0.65em;
+//     transition: width 0.3s ease;
+//     a { float: right; direction: ltr; }
+//     &:hover { width: auto; }
+// }
+.post-notice {
+    border-radius: 7px 7px 0 0;
+    background-color: var(--tertiary-low);
+    border: none;
+    &.old {
+        background-color: var(--tertiary-low);
+        color: var(--primary-medium);
+        opacity: 0.6;
+    }
+}
+
+// Make topic title links easier to see!
+.link-top-line .title { font-weight: bold; }
+
+.title-wrapper {
+    .discourse-tags {
+        padding-left: 1em;
+        border-left: 1px solid var(--primary-low);
+        @include breakpoint(mobile-extra-large) {
+            padding-left: 0;
+            border-left: 0;
+        }
+        .discourse-tag {
+            padding-right: 4px
+        }
+    }
+    a.badge-wrapper {
+        margin-right: 1em;
+    }
+}
+
+// More visible timers
+#topic .topic-status-info .topic-timer-heading {
+    background-color: var(--header_background) ;
+    padding: 10px;
+}
+
+.post-stream {
+    article > .row {
+    }
+    .topic-post + .gap {
+        border-top: 1px solid var(--primary-low);
+        padding-top: 0.5em;
+        max-width: 758px;
+    }
+}

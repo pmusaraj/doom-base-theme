@@ -1,0 +1,85 @@
+.discourse-tag {
+    padding-left: 0;
+    background: none;
+    &, &:visited, &:hover {
+        color: var(--primary-high);
+        &.bullet::before { background-color: var(--primary-high); }
+    }
+}
+
+@include tags((
+    "=backlog"
+    "=breaking-change"
+    "=community"
+    "=doom-snippets"
+    "=doom-themes"
+    "=duplicate"
+    "=event"
+    "=help-wanted"
+    "=status"
+    "=incomplete"
+    "=invalid"
+    "=investigating"
+    "=nofix"
+    "=obsolete"
+    "=ongoing"
+    "=pending-fix"
+    "=poll"
+    "=priority"
+    "=release"
+    "=solved"
+    "=stale"
+    "=todo"
+    "=priority"
+    "=heated"
+    "=unknown"
+    "=website"
+    "=wontfix"
+    "=workaround"
+)) { &.bullet::before { display: none; } }
+// Announcement tags
+@include tag-color(("=status" "=community" "=event" "=breaking-change" "=release" "=external" "=poll"), var(--love), 3);
+@include tag-color(("^=news-"), var(--quaternary), 5);
+// Issue status tags
+@include tag-color(("=solved" "=workaround"), var(--tag-solved), 3);
+@include tag-color(("=nofix" "=wontfix" "=unknown"), var(--tag-abort), 3);
+@include tag-color(("=investigating" "=ongoing" "=pending-fix" "=todo"), var(--tag-pending), 3);
+@include tag-color(("=incomplete"), var(--tag-warn), 3);
+@include tag-color(("=help-wanted" "=backlog"), var(--tag-attention), 3);
+@include tag-color(("=stale" "=obsolete"), var(--tag-stale), 3);
+// Issue type tags
+@include tag-color(("=bug" "=code-review" "=upstream" "=suggestion" "=request" "=local" "=not-a-bug" "=howto" "=question"), var(--primary), 4);
+@include tag-color(("=duplicate" "=invalid"), desaturate($primary-high, 100%), 4);
+// Emacs contexts
+@include tag-color(("^=emacs2" "=native-comp" "=pgtk" "=tty" "=gui" "=exwm"), var(--primary-high), 5);
+@include tag-color(
+    (// Operating systems
+     "=antergos" "=arch-linux" "=debian" "=gentoo" "=guix" "=kali" "=macos" "=manjaro" "=mint"
+     "=nixos" "=opensuse" "=ubuntu" "=void-linux" "=windows" "=windows-wsl" "=linux"
+     // Programming languages
+     "=agda" "=c" "=clojure" "=common-lisp" "=cpp" "=crystal" "=csharp" "=dart" "=elixir"
+     "=elm" "=emacs-lisp" "=erlang" "=ess" "=faust" "=fsharp" "=fstar" "=gdscript" "=go"
+     "=haskell" "=htmlcss" "=hy" "=idris" "=java" "=javascript" "=json" "=julia" "=kotlin"
+     "=latex" "=ledger" "=lua" "=markdown" "=nim" "=nix" "=ocaml" "=org" "=perl" "=php"
+     "=plantuml" "=python" "=racket" "=raku" "=ruby" "=rust" "=scala" "=scheme" "=sh" "=swift"
+     "=yaml"
+     // Tools
+     "=docker" "=org-roam" "=kubernetes" "=reactjs" "=vuejs" "=angularjs" "=jupyter" "=lsp"
+     // Projects
+     "=doom-themes" "=doom-snippets" "=website"
+     ), var(--quaternary), 5);
+
+// Project tags
+@include tag-color(("=doom-snippets" "=doom-themes" "=website"), var(--tag-project), 2) {
+    font-weight: bold;
+}
+
+// Moderation tags
+@include tag-color(("=priority" "=heated"), var(--danger), 1) {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+@include tag-color(("=todo"), var(--warning), 1) {
+    font-weight: bold;
+    text-transform: uppercase;
+}
